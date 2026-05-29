@@ -6,7 +6,7 @@ from pathlib import Path
 from github import Github
 
 
-DEFAULT_TITLE_PREFIX = "Spring Boot Upgrade Planning"
+DEFAULT_TITLE_PREFIX = "Java Spring Boot Upgrade Planning"
 
 
 def detect_local_repo():
@@ -53,7 +53,7 @@ def print_summary(repo_name):
     """
 
     print("\n" + "=" * 60)
-    print("Spring Boot Upgrade Planning Generator")
+    print("Java Spring Boot Upgrade Planning Generator")
     print("=" * 60)
 
     print(f"\nTarget Repository : {repo_name}")
@@ -61,7 +61,7 @@ def print_summary(repo_name):
 
 def create_github_issue(repo_name, title, body):
     """
-    Create GitHub issue.
+    Create GitHub issue if no duplicate exists.
     """
 
     token = os.getenv("GITHUB_TOKEN")
@@ -74,6 +74,14 @@ def create_github_issue(repo_name, title, body):
     github_client = Github(token)
 
     repository = github_client.get_repo(repo_name)
+
+    existing_issues = repository.get_issues(state="open")
+
+    for issue in existing_issues:
+        if issue.title.strip().lower() == title.strip().lower():
+            print("\nDuplicate issue already exists")
+            print(issue.html_url)
+            return None
 
     issue = repository.create_issue(
         title=title,
@@ -134,6 +142,7 @@ def main():
             body
         )
 
+    if issue_url:
         print("\nIssue created successfully")
         print(issue_url)
 
