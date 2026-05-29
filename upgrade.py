@@ -3,7 +3,10 @@ import subprocess
 from pathlib import Path
 
 
-def detect_repo_name():
+DEFAULT_TITLE_PREFIX = "Java Spring Boot Upgrade Planning"
+
+
+def detect_local_repo():
     """
     Detect current git repository name.
     """
@@ -22,7 +25,7 @@ def detect_repo_name():
 
 def load_template():
     """
-    Load issue template from file.
+    Load issue template content.
     """
 
     with open("issue_template.md", "r", encoding="utf-8") as file:
@@ -34,11 +37,23 @@ def generate_issue(repo_name):
     Generate issue title and body.
     """
 
-    title = f"java Spring Boot Upgrade Planning - {repo_name}"
+    title = f"{DEFAULT_TITLE_PREFIX} - {repo_name}"
 
     body = load_template()
 
     return title, body
+
+
+def print_summary(repo_name):
+    """
+    Print execution summary.
+    """
+
+    print("\n" + "=" * 60)
+    print("Java Spring Boot Upgrade Planning Generator")
+    print("=" * 60)
+
+    print(f"\nTarget Repository : {repo_name}")
 
 
 def print_issue(title, body):
@@ -46,29 +61,41 @@ def print_issue(title, body):
     Print generated issue.
     """
 
+    print(f"\nIssue Title:\n{title}")
+
+    print("\nIssue Body:\n")
+    print(body)
+
     print("\n" + "=" * 60)
-    print("Generated GitHub Upgrade Planning Issue")
+    print("Dry run completed successfully")
     print("=" * 60)
-
-    print(f"\nTITLE:\n{title}")
-
-    print(f"\nBODY:\n{body}")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate Java Spring Boot upgrade planning issue"
+        description="Generate Java Spring Boot upgrade planning issues"
+    )
+
+    parser.add_argument(
+        "--repo",
+        type=str,
+        help="Target GitHub repository (owner/repo)"
     )
 
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Print issue instead of creating it"
+        help="Print generated issue without creating it"
     )
 
     args = parser.parse_args()
 
-    repo_name = detect_repo_name()
+    if args.repo:
+        repo_name = args.repo
+    else:
+        repo_name = detect_local_repo()
+
+    print_summary(repo_name)
 
     title, body = generate_issue(repo_name)
 

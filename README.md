@@ -33,3 +33,11 @@ Spring Boot Upgrade Planning - inventory-service
 - Duplicate issue prevention
 - Support for remote repositories
 - GitHub Actions integration
+
+---
+
+### Target Another Repository
+
+```bash
+python upgrade.py --repo owner/repo --dry-run
+```
