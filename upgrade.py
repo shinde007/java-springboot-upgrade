@@ -1,9 +1,12 @@
 import argparse
+import os
 import subprocess
 from pathlib import Path
 
+from github import Github
 
-DEFAULT_TITLE_PREFIX = "Java Spring Boot Upgrade Planning"
+
+DEFAULT_TITLE_PREFIX = "Spring Boot Upgrade Planning"
 
 
 def detect_local_repo():
@@ -50,10 +53,34 @@ def print_summary(repo_name):
     """
 
     print("\n" + "=" * 60)
-    print("Java Spring Boot Upgrade Planning Generator")
+    print("Spring Boot Upgrade Planning Generator")
     print("=" * 60)
 
     print(f"\nTarget Repository : {repo_name}")
+
+
+def create_github_issue(repo_name, title, body):
+    """
+    Create GitHub issue.
+    """
+
+    token = os.getenv("GITHUB_TOKEN")
+
+    if not token:
+        raise Exception(
+            "GITHUB_TOKEN environment variable not found"
+        )
+
+    github_client = Github(token)
+
+    repository = github_client.get_repo(repo_name)
+
+    issue = repository.create_issue(
+        title=title,
+        body=body
+    )
+
+    return issue.html_url
 
 
 def print_issue(title, body):
@@ -73,12 +100,13 @@ def print_issue(title, body):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate Java Spring Boot upgrade planning issues"
+        description="Generate Spring Boot upgrade planning issues"
     )
 
     parser.add_argument(
         "--repo",
         type=str,
+        required=True,
         help="Target GitHub repository (owner/repo)"
     )
 
@@ -90,16 +118,24 @@ def main():
 
     args = parser.parse_args()
 
-    if args.repo:
-        repo_name = args.repo
-    else:
-        repo_name = detect_local_repo()
+    repo_name = args.repo
 
     print_summary(repo_name)
 
     title, body = generate_issue(repo_name)
 
-    print_issue(title, body)
+    if args.dry_run:
+        print_issue(title, body)
+
+    else:
+        issue_url = create_github_issue(
+            repo_name,
+            title,
+            body
+        )
+
+        print("\nIssue created successfully")
+        print(issue_url)
 
 
 if __name__ == "__main__":
